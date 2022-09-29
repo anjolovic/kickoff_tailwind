@@ -14,8 +14,25 @@ def add_gems
   gem 'friendly_id', '~> 5.4', '>= 5.4.2'
   gem 'cssbundling-rails'
   gem 'name_of_person'
-  gem 'sidekiq', '~> 6.5', '>= 6.5.4'
+  gem 'sidekiq', '< 8'
   gem 'stripe'
+  gem 'pagy', '~> 5.10'
+  gem 'annotate'
+end
+
+gem_group :test do
+  gem 'rspec-rails'
+  gem 'factory_bot_rails'
+end
+
+gem_group :development, :test do
+  gem 'pry-byebug'
+  gem 'pry-rails'
+  gem 'faker'
+end
+
+def add_rspec
+  generate 'rspec:install'
 end
 
 def add_tailwind
@@ -30,13 +47,16 @@ def add_storage_and_rich_text
   rails_command "action_text:install"
 end
 
+def add_annotations
+  generate "annotate:install"
+end
+
 def add_users
   # Install Devise
   generate "devise:install"
 
   # Configure Devise
-  environment "config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }",
-              env: 'development'
+  environment "config.action_mailer.default_url_options = { host: 'localhost', port: 4000 }", env: "development"
 
   route "root to: 'home#index'"
 
@@ -96,10 +116,14 @@ after_bundle do
   add_sidekiq
   copy_templates
   add_friendly_id
+  add_annotations
+  add_rspec
 
   # Migrate
   rails_command "db:create"
   rails_command "db:migrate"
+  rails_command "annotate --models" 
+  
 
   git :init
   git add: "."
